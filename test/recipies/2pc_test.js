@@ -57,10 +57,7 @@ describe('2 pc', function  () {
 
     describe("simple one site tests", function  () {
         it('should successfully execute', function  (done) {
-            coordinator.execute('update', {sites: [comittingSite()], quorum: true}, function  (err, result) {
-                console.log("Execution complete", arguments);
-                return done(err, result);
-            });
+            coordinator.execute('update', {sites: [comittingSite()], quorum: true}, done);
         });
 
         it('should abort', function  (done) {
