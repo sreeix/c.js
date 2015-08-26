@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 var twoPhaseCommit = require('../../lib/recipies/2pc');
 var zkPath = require('../../lib/zkPath');
 var zookeeper = require('node-zookeeper-client');

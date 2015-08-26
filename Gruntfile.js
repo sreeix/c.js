@@ -3,6 +3,13 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
       pkg: grunt.file.readJSON('package.json'),
+       jshint: {
+           all: ['Gruntfile.js', 'lib/**/*.js', 'test/**/*.js'],
+           options: {
+               reporter: require('jshint-stylish'),
+               jshintrc:'jshintrc'
+           }
+       },
       simplemocha: {
           options: {
               globals: ['should'],

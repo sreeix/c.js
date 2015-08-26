@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 var zookeeper = require('node-zookeeper-client');
 
 var locker = require('../../lib/recipies/lock');
@@ -35,7 +35,7 @@ describe('Lock', function () {
             lock.lock(function (err, releaseFn) {
                 if(err) {
                     // Is i mandatory to call release fn, maybe not.
-                    return done(err)
+                    return done(err);
                 }
                 console.log("Lock acquired... Now doing magic");
                 releaseFn();
@@ -58,7 +58,7 @@ describe('Lock', function () {
                     lockAcquired = new Date();
                     if(err) {
                         // Is i mandatory to call release fn, maybe not.
-                        return done(err)
+                        return done(err);
                     }
                     releaseFn();
                     (lockReleased < lockAcquired).should.equal(true);
@@ -83,7 +83,7 @@ describe('Lock', function () {
                     lockAcquired = new Date();
                     if(err) {
                         // Is i mandatory to call release fn, maybe not.
-                        return done(err)
+                        return done(err);
                     }
                     releaseFn();
                     (lockReleased < lockAcquired).should.equal(true);
@@ -119,7 +119,7 @@ describe('Lock', function () {
                         lockAcquired = new Date();
                         if(err) {
                             // Is i mandatory to call release fn, maybe not.
-                            return done(err)
+                            return done(err);
                         }
                         releaseFn();
                         return done();
@@ -155,7 +155,7 @@ describe('Lock', function () {
                         lockAcquired = new Date();
                         if(err) {
                             // Is i mandatory to call release fn, maybe not.
-                            return done(err)
+                            return done(err);
                         }
                         releaseFn();
                         return done();
