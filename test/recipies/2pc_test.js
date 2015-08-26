@@ -75,8 +75,30 @@ describe('2 pc', function  () {
     });
 
     describe("For 2 sites", function  () {
+        it('should commit with quorum when 2 sites commit', function  (done) {
+            coordinator.execute('update', {sites: [comittingSite(), comittingSite()], quorum: true}, done);
+        });
+
         it('should abort with quorum when 1 site aborts', function  (done) {
             coordinator.execute('update', {sites: [abortingSite(), comittingSite()], quorum: true}, function  (err, result) {
+                if(err){
+                    // we were expecting this. should be abort.
+                    return done();
+                }
+                return done("Unexpected. We were expecting an abort. As writing to tlog failed");
+            });
+        });
+
+        it('should commit with quorum = 1 when first site says abort', function  (done) {
+            coordinator.execute('update', {sites: [abortingSite('slow-site', 10), comittingSite('fast-site', 1000)], quorum: 1}, done);
+        });
+
+        it('should commit with quorum = 1 when first site says commit and second abort', function  (done) {
+            coordinator.execute('update', {sites: [abortingSite('slow-site', 1000), comittingSite('fast-site', 10)], quorum: 1}, done);
+        });
+
+        it('should abort with quorum when 1 site aborts even if first is success', function  (done) {
+            coordinator.execute('update', {sites: [abortingSite('slow-site', 1000), comittingSite('fast-site', 100)], quorum: true}, function  (err, result) {
                 if(err){
                     // we were expecting this. should be abort.
                     return done();
