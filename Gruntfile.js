@@ -13,7 +13,7 @@ module.exports = function(grunt) {
       simplemocha: {
           options: {
               globals: ['should'],
-              timeout: 3000,
+              timeout: 15000,
               ignoreLeaks: false,
               grep: '.*',
               ui: 'bdd',
@@ -27,6 +27,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-simple-mocha');
   // Default task(s).
-    grunt.registerTask('default', ['simplemocha']);
+    grunt.registerTask('default', ['jshint','simplemocha']);
 
 };
