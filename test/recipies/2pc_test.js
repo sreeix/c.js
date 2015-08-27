@@ -17,7 +17,7 @@ describe('2 pc', function  () {
         name = name || "comitting-site-"+random(10000);
         return tpc.site(zkPath.join(path, 'transaction'), name, function  (command, cb) {
                 setTimeout(function  () {
-                    console.log("Wrting to Transaction log");
+                    console.log("Wrting %s to Transaction log", command);
                     cb(null, 'success');
                 }, timeout);
             });
@@ -29,7 +29,7 @@ describe('2 pc', function  () {
 
         return tpc.site(zkPath.join(path, 'transaction'), name, function  (command, cb) {
                 setTimeout(function  () {
-                    console.log("Wrting to Transaction log");
+                    console.log("Wrting %s to Transaction log failed", command);
                     cb('failed');
                 }, timeout);
         });
@@ -56,11 +56,20 @@ describe('2 pc', function  () {
     });
 
     describe("simple one site tests", function  () {
-        it('should successfully execute', function  (done) {
+        xit('should successfully execute', function  (done) {
             coordinator.execute('update', {sites: [comittingSite()], quorum: true}, done);
         });
 
-        it('should abort', function  (done) {
+        xit('should abort on default timeout(5000 ms)', function  (done) {
+            coordinator.execute('update', {sites: [comittingSite('slow-comitting', 8000)], quorum: true}, function  (err, result) {
+                if(err){
+                    // we were expecting this. should be abort.
+                    return done();
+                }
+                return done("Unexpected. We were expecting an abort. As writing to tlog failed");
+            });
+        });
+        xit('should abort', function  (done) {
             coordinator.execute('update', {sites: [abortingSite()], quorum: true}, function  (err, result) {
                 if(err){
                     // we were expecting this. should be abort.
@@ -72,11 +81,11 @@ describe('2 pc', function  () {
     });
 
     describe("For 2 sites", function  () {
-        it('should commit with quorum when 2 sites commit', function  (done) {
+        xit('should commit with quorum when 2 sites commit', function  (done) {
             coordinator.execute('update', {sites: [comittingSite(), comittingSite()], quorum: true}, done);
         });
 
-        it('should abort with quorum when 1 site aborts', function  (done) {
+        xit('should abort with quorum when 1 site aborts', function  (done) {
             coordinator.execute('update', {sites: [abortingSite(), comittingSite()], quorum: true}, function  (err, result) {
                 if(err){
                     // we were expecting this. should be abort.
@@ -85,17 +94,26 @@ describe('2 pc', function  () {
                 return done("Unexpected. We were expecting an abort. As writing to tlog failed");
             });
         });
+        xit('should abort on default timeout(5000 ms)', function  (done) {
+            coordinator.execute('update', {sites: [comittingSite('slow-comitting', 8000), comittingSite('slow-comitting', 3000)], quorum: true}, function  (err, result) {
+                if(err){
+                    // we were expecting this. should be abort.
+                    return done();
+                }
+                return done("Unexpected. We were expecting an abort. As writing to tlog failed");
+            });
+        });
 
-        it('should commit with quorum = 1 when first site says abort', function  (done) {
+        xit('should commit with quorum = 1 when first site says abort', function  (done) {
             coordinator.execute('update', {sites: [abortingSite('slow-site', 10), comittingSite('fast-site', 1000)], quorum: 1}, done);
         });
 
         it('should commit with quorum = 1 when first site says commit and second abort', function  (done) {
-            coordinator.execute('update', {sites: [abortingSite('slow-site', 1000), comittingSite('fast-site', 10)], quorum: 1}, done);
+            coordinator.execute('update', {sites: [abortingSite('slow-site', 300), comittingSite('fast-site', 10)], quorum: 1}, done);
         });
 
-        it('should abort with quorum when 1 site aborts even if first is success', function  (done) {
-            coordinator.execute('update', {sites: [abortingSite('slow-site', 1000), comittingSite('fast-site', 100)], quorum: true}, function  (err, result) {
+        xit('should abort with quorum when 1 site aborts even if first is success', function  (done) {
+            coordinator.execute('update', {sites: [abortingSite('slow-site', 300), comittingSite('fast-site', 10)], quorum: true}, function  (err, result) {
                 if(err){
                     // we were expecting this. should be abort.
                     return done();
@@ -104,7 +122,7 @@ describe('2 pc', function  () {
             });
         });
 
-        it('should abort with quorum of when 1 site aborts and 1 commits', function  (done) {
+        xit('should abort with quorum of when 1 site aborts and 1 commits', function  (done) {
             coordinator.execute('update', {sites: [abortingSite(), comittingSite()], quorum: true}, function  (err, result) {
                 if(err){
                     // we were expecting this. should be abort.
@@ -114,7 +132,7 @@ describe('2 pc', function  () {
             });
         });
 
-        it('should abort with quorum of when 1 site aborts and 1 commits', function  (done) {
+        xit('should abort with quorum of when 1 site aborts and 1 commits', function  (done) {
             coordinator.execute('update', {sites: [abortingSite(), comittingSite()], quorum: false}, function  (err, result) {
                 if(err){
                     // we were expecting this. should be abort.
