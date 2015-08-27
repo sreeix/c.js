@@ -3,6 +3,7 @@ var twoPhaseCommit = require('../../lib/recipies/2pc');
 var zkPath = require('../../lib/zkPath');
 var zookeeper = require('node-zookeeper-client');
 var Promise = require('bluebird');
+
 describe('2 pc', function  () {
     var client;
     var zkLib;

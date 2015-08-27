@@ -7,7 +7,7 @@ module.exports = function(grunt) {
            all: ['Gruntfile.js', 'lib/**/*.js', 'test/**/*.js'],
            options: {
                reporter: require('jshint-stylish'),
-               jshintrc:'jshintrc'
+               jshintrc:'.jshintrc'
            }
        },
       simplemocha: {
@@ -23,7 +23,6 @@ module.exports = function(grunt) {
       }
   });
 
-    // Load the plugin that provides the "uglify" task.
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-simple-mocha');
   // Default task(s).
