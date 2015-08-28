@@ -1,3 +1,4 @@
+"use strict";
 var fsm = require('../../lib/fsm');
 var _ = require('underscore');
 describe(" fsm", function() {
@@ -20,7 +21,6 @@ describe(" fsm", function() {
                 if(_.first(_.values(event)) === 'ABORT'){
                     context.abortVotes++;
                 }
-                console.log(context);
                 if(context.abortVotes > context.abortVotesNeeded){
                     return fsm.aborting();
                 }
@@ -34,6 +34,7 @@ describe(" fsm", function() {
         fsm.sendEvent({site1: 'COMMIT'});
         fsm.currentState.should.equal('PREPARE');
         fsm.sendEvent({site2: 'COMMIT'});
+        fsm.isCommitting().should.equal(true);
         fsm.currentState.should.equal('COMMITTING');
         fsm.sendEvent({site2: 'COMMIT'});
         fsm.currentState.should.equal('COMMITTED');
