@@ -10,11 +10,16 @@ describe(" fsm", function() {
             initialState: 'PREPARE',
             finalStates: ['COMMITTED', 'ABORTED'],
             context: {commitVotesNeeded: 2, abortVotesNeeded: 2, commitVotes: 0, abortVotes: 0},
+            onCommitting: function (context) {
+                console.log("***********Committing.");
+            },
+            onCommitted: function (context) {
+                console.log("**********************Committed.");
+            },
             committingTransitionFn: function (event, context) {
-                return fsm.committed();
+                return this.committed();
             },
             transitionFn: function (event, context) {
-                console.log("----", context);
                 if(_.first(_.values(event)) === 'COMMIT'){
                     context.commitVotes++;
                 }
@@ -22,14 +27,15 @@ describe(" fsm", function() {
                     context.abortVotes++;
                 }
                 if(context.abortVotes > context.abortVotesNeeded){
-                    return fsm.aborting();
+                    return this.aborting();
                 }
                 if(context.commitVotes >= context.commitVotesNeeded){
-                    return fsm.committing();
+                    return this.committing();
                 }
-                return fsm.noStateChange();
+                return this.noStateChange();
             }
         });
+
         fsm.currentState.should.equal('PREPARE');
         fsm.sendEvent({site1: 'COMMIT'});
         fsm.currentState.should.equal('PREPARE');
@@ -38,5 +44,6 @@ describe(" fsm", function() {
         fsm.currentState.should.equal('COMMITTING');
         fsm.sendEvent({site2: 'COMMIT'});
         fsm.currentState.should.equal('COMMITTED');
+
     });
 });
