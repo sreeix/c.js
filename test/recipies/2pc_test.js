@@ -60,6 +60,9 @@ describe('2 pc', function  () {
         it('should successfully execute', function  (done) {
             coordinator.execute('update', {sites: [comittingSite()], quorum: true}, done);
         });
+        it('should successfully execute with quorum=1', function  (done) {
+            coordinator.execute('update', {sites: [comittingSite()], quorum: 1}, done);
+        });
 
         it('should abort on default timeout(5000 ms)', function  (done) {
             coordinator.execute('update', {sites: [comittingSite('slow-comitting', 8000)], quorum: true}, function  (err, result) {

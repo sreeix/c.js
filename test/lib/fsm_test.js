@@ -44,6 +44,5 @@ describe(" fsm", function() {
         fsm.currentState.should.equal('COMMITTING');
         fsm.sendEvent({site2: 'COMMIT'});
         fsm.currentState.should.equal('COMMITTED');
-
     });
 });
