@@ -9,7 +9,7 @@ describe('Lock', function () {
     var client;
     var zkLib;
     var createLockNode =  function  () {
-        return zkLib.create('/bjn/tests/test-locks/lock-',  new Buffer('lock'),  zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL);
+        return zkLib.create('/bjn/tests/test-locks/lock-', new Buffer('lock'), zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL);
     };
 
     beforeEach(function(done) {

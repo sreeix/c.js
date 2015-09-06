@@ -1,32 +1,32 @@
 {
-  "name": "curator.js",
-  "version": "1.0.0",
-  "description": "Curator for nodejs",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "zookeeper"
-  ],
-  "author": "V Sreekanth",
-  "license": "BSD",
-  "dependencies": {
-    "bluebird": "^2.9.34",
-    "grunt": "^0.4.5",
-    "grunt-mocha": "^0.4.13",
-    "jshint": "^2.8.0",
-    "node-zookeeper-client": "^0.1.1",
-    "should": "^7.0.4",
-    "sinon": "^1.16.1",
-    "underscore": "^1.8.3",
-    "underscore.string": "^3.2.0"
-  },
-  "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-jshint": "^0.11.2",
-    "grunt-simple-mocha": "^0.4.0",
-    "jshint-stylish": "^2.0.1",
-    "mocha": "2.2.5"
-  }
+    "name": "curator.js",
+    "version": "1.0.0",
+    "description": "Curator for nodejs",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "zookeeper"
+    ],
+    "author": "V Sreekanth",
+    "license": "BSD",
+    "dependencies": {
+        "bluebird": "^2.9.34",
+        "grunt": "^0.4.5",
+        "grunt-mocha": "^0.4.13",
+        "jshint": "^2.8.0",
+        "node-zookeeper-client": "^0.1.1",
+        "should": "^7.0.4",
+        "sinon": "^1.16.1",
+        "underscore": "^1.8.3",
+        "underscore.string": "^3.2.0"
+    },
+    "devDependencies": {
+        "grunt": "^0.4.5",
+        "grunt-contrib-jshint": "^0.11.2",
+        "grunt-simple-mocha": "^0.4.0",
+        "jshint-stylish": "^2.0.1",
+        "mocha": "2.2.5"
+    }
 }
