@@ -20,7 +20,9 @@ describe("persistentEphemeralNode", function() {
 
 
     it("creates a new node", function(done) {
-        pen(client).create('/bjn/tmp/persistent1', function (err, path) {
+        console.log("creating new node");
+        pen(client).create('/bjn/tmp/persistent1','hello',  function (err, path) {
+            console.log(arguments);
             console.log("Got Path", path);
             path.path.should.equal('/bjn/tmp/persistent1');
             path.close();
@@ -29,4 +31,17 @@ describe("persistentEphemeralNode", function() {
         });
 
     });
+        it("creates a new node without any data", function(done) {
+        console.log("creating new node");
+        pen(client).create('/bjn/tmp/persistent1', function (err, path) {
+            console.log(arguments);
+            console.log("Got Path", path);
+            path.path.should.equal('/bjn/tmp/persistent1');
+            path.close();
+            console.log("xxxx");
+            done(err, path);
+        });
+
+    });
+
 });

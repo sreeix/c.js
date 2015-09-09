@@ -5,7 +5,7 @@ describe(" fsm", function() {
 
 
     it("is in initial state ", function() {
-        fsm.init({
+        var tp = fsm({
             states: ['PREPARE', "COMMITTING", "ABORTING", "COMMITTED", "ABORTED"],
             initialState: 'PREPARE',
             finalStates: ['COMMITTED', 'ABORTED'],
@@ -36,13 +36,13 @@ describe(" fsm", function() {
             }
         });
 
-        fsm.currentState.should.equal('PREPARE');
-        fsm.sendEvent({site1: 'COMMIT'});
-        fsm.currentState.should.equal('PREPARE');
-        fsm.sendEvent({site2: 'COMMIT'});
-        fsm.isCommitting().should.equal(true);
-        fsm.currentState.should.equal('COMMITTING');
-        fsm.sendEvent({site2: 'COMMIT'});
-        fsm.currentState.should.equal('COMMITTED');
+        tp.currentState.should.equal('PREPARE');
+        tp.sendEvent({site1: 'COMMIT'});
+        tp.currentState.should.equal('PREPARE');
+        tp.sendEvent({site2: 'COMMIT'});
+        tp.isCommitting().should.equal(true);
+        tp.currentState.should.equal('COMMITTING');
+        tp.sendEvent({site2: 'COMMIT'});
+        tp.currentState.should.equal('COMMITTED');
     });
 });

@@ -9,7 +9,8 @@ describe('Lock', function () {
     var client;
     var zkLib;
     var createLockNode =  function  () {
-        return zkLib.create('/bjn/tests/test-locks/lock-', new Buffer('lock'), zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL);
+        var lockNodePath = '/bjn/tests/test-locks/lock-'+client.getSessionId().toString('hex') +"-";
+        return zkLib.create(lockNodePath, new Buffer('lock'), zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL);
     };
 
     beforeEach(function(done) {
@@ -30,7 +31,7 @@ describe('Lock', function () {
     describe("lock", function () {
         this.timeout(10000);
 
-       it('should create locks when no other exists', function (done) {
+        it('should create locks when no other exists', function (done) {
             var lock = locker(client).at('/bjn/tests/test-locks');
             lock.lock(function (err, releaseFn) {
                 if(err) {
@@ -43,7 +44,7 @@ describe('Lock', function () {
             });
         });
         it('should wait for single lock', function (done) {
-            var lockReleased , lockAcquired;
+            var lockReleased, lockAcquired;
             var lock = locker(client).at('/bjn/tests/test-locks');
             // create another node for the lock key so that we block on that.
             createLockNode().then(function (lockPath) {
@@ -150,8 +151,8 @@ describe('Lock', function () {
                     return true;
                 }).then(function  (l) {
                     lock.lock(function (err, releaseFn) {
-                        lock1Released .should.equal(true);
-                        lock2Released .should.equal(true);
+                        lock1Released.should.equal(true);
+                        lock2Released.should.equal(true);
                         lockAcquired = new Date();
                         if(err) {
                             // Is i mandatory to call release fn, maybe not.
