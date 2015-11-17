@@ -4,6 +4,10 @@ var _ = require('underscore');
 describe(" fsm", function() {
 
 
+    it("works for simplest machine", function  (arg) {
+        var tp = fsm({states:[], initialState: 'XXX', finalStates: []})
+    })
+
     it("is in initial state ", function() {
         var tp = fsm({
             states: ['PREPARE', "COMMITTING", "ABORTING", "COMMITTED", "ABORTED"],

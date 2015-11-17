@@ -55,7 +55,34 @@ describe('2 pc', function  () {
         console.log("Closing Zk Connection");
         client.close();
     });
-    describe(" strict 2pc", function() {
+    describe("strict 2 pc", function (arg) {
+        describe("simple one site tests", function  () {
+            it('should successfully execute', function  (done) {
+                coordinator.execute('update', {sites: [comittingSite()], quorum: false}, done);
+            });
+            xit('should abort on default timeout(5000 ms)', function  (done) {
+                coordinator.execute('update', {sites: [comittingSite('slow-comitting', 8000)], quorum: false}, function  (err, result) {
+                    if(err){
+                        // we were expecting this. should be abort.
+                        return done();
+                    }
+                    return done("Unexpected. We were expecting an abort. As writing to tlog failed");
+                });
+            });
+            xit('should abort', function  (done) {
+                coordinator.execute('update', {sites: [abortingSite()], quorum: false}, function  (err, result) {
+                    if(err){
+                        // we were expecting this. should be abort.
+                        return done();
+                    }
+                    return done("Unexpected. We were expecting an abort. As writing to tlog failed");
+                });
+            });
+        });
+
+    })
+
+    describe("loose 2pc with quorum", function() {
         describe("simple one site tests", function  () {
             it('should successfully execute', function  (done) {
                 coordinator.execute('update', {sites: [comittingSite()], quorum: true}, done);
