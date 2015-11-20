@@ -22,7 +22,6 @@ describe("zk library", function() {
     });
 
     afterEach(function (done) {
-        console.log("Cleaning up");
         zkLib.rmr(testRoot).then(function () {
             console.log("Closing Zk Connection");
             client.close();
@@ -30,7 +29,7 @@ describe("zk library", function() {
         }).catch(done);
     });
 
-    xdescribe("rmr", function() {
+    describe("rmr", function() {
         it("removes single node", function(done) {
             return client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.EPHEMERAL,
                                  function (err, path) {
@@ -52,10 +51,9 @@ describe("zk library", function() {
                                                               return zkLib.rmr(testRoot).then(function () {
                                                                   client.exists(testRoot, function (err, stat) {
                                                                       if(err) {return done(err);}
-                                                                      console.log("Did we find the stat", stat);
                                                                       should(stat).be.null(); // stat ok means that node exists, after rmr it should be gone
                                                                       return done();
-                                                                  })
+                                                                  });
 
                                                               }).catch(done);
                                                           });
@@ -261,17 +259,60 @@ describe("zk library", function() {
                                        }).then(function  (s) {
                                            services = s;
 
-                                       }).delay(5000).then(function () {
+                                       }).delay(500).then(function () {
                                            console.log("Creating the /foo/bar node");
                                            return client.mkdirpAsync(testRoot+"/foo/bar", zookeeper.CreateMode.PERSISTENT)
-                                               .delay(2000)
+                                               .delay(200)
                                                .then(function () {
                                                    console.log("~~~~~~", services);
                                                    console.log("removing foo");
                                                    return client.removeAsync(testRoot+"/foo/bar", zookeeper.CreateMode.PERSISTENT);                                               });
-                                       }).delay(5000).then(function () {
+                                       }).delay(500).then(function () {
                                            console.log("~~~~~~", services);
                                            console.log("Checking watch count", watchCount);
+                                           done();
+                                       }).catch(function  (err) {
+                                           console.log("got error", err);
+                                           throw err;
+                                       });
+            });
+        });
+
+        it("watches data changes on node", function(done) {
+            var watchCount = 0;
+            client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
+                zkLib.watchAllChildren(testRoot,
+                                       {recursive: false, times: 1, added:false, deleted:false},
+                                       function watcher(event, data) {
+                                           console.log("got event", event);
+                                           if(data) {
+                                               console.log(data.toString());
+                                           }
+                                           watchCount++;
+                                       }).then(function  (s) {
+                                           services = s;
+                                       }).delay(500).then(function () {
+                                           console.log("Creating the /foo/bar node");
+                                           return client.mkdirpAsync(testRoot+"/foo/bar", zookeeper.CreateMode.PERSISTENT)
+                                               .delay(200)
+                                               .then(function () {
+                                                   return client.setDataAsync(testRoot+"/foo/bar", new Buffer('Yo'));
+                                               });
+                                       }).delay(500).then(function () {
+                                           //console.log("~~~~~~", services);
+                                           should(services.children[0].children[0].path).be.equal("/test-temp/foo/bar");
+                                           should(services.children[0].children[0].data).be.equal("Yo");
+                                           console.log("Checking watch count", watchCount);
+                                       }).then(function () {
+                                           return client.setDataAsync(testRoot+"/foo/bar", new Buffer('Yo Data'));
+                                       }).delay(100).then(function () {
+                                           console.log("--------------------", services.children[0]);
+                                           should(services.children[0].children[0].data).be.equal("Yo Data");
+                                       }).then(function () {
+                                           return client.setDataAsync(testRoot+"/foo/bar", new Buffer(''));
+                                       }).delay(100).then(function () {
+                                           console.log("--------------------", services.children[0]);
+                                           should(services.children[0].children[0].data).not.be.ok();
                                            done();
                                        }).catch(function  (err) {
                                            console.log("got error", err);
