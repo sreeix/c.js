@@ -98,7 +98,7 @@ describe("zk library", function() {
 
     describe("watchChildren", function () {
         var services;
-        xit("watches no children of empty node", function(done) {
+        it("watches no children of empty node", function(done) {
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
                                        {recursive: false, times: 1, added:false, deleted:false},
@@ -119,7 +119,7 @@ describe("zk library", function() {
         });
 
 
-        xit("watches an existing heirarchy", function(done) {
+        it("watches an existing heirarchy", function(done) {
             client.mkdirp(testRoot + "/foo", new Buffer("test"),
                           zookeeper.CreateMode.PERSISTENT,
                           function (err, path) {
@@ -143,7 +143,7 @@ describe("zk library", function() {
                           });
                 });
 
-        xit("watches one node addition", function(done) {
+        it("watches one node addition", function(done) {
             var watchCount = 0
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
@@ -168,7 +168,7 @@ describe("zk library", function() {
             });
         });
 
-        xit("watches multiple node additions", function(done) {
+        it("watches multiple node additions", function(done) {
             var watchCount = 0;
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
@@ -205,7 +205,7 @@ describe("zk library", function() {
         });
 
 
-        xit("watches multiple node deletions", function(done) {
+        it("watches multiple node deletions", function(done) {
             var childrenChange = false, deleteWatchNotification = false;
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
