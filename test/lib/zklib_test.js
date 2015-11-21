@@ -7,7 +7,7 @@ var _ = require('underscore');
 
 describe("zk library", function() {
     var client;
-    var zkLib;
+    var zkLib, zkPath = require('../../lib/zkPath');
     var testRoot = "/test-temp";
 
     beforeEach(function(done) {
@@ -70,7 +70,6 @@ describe("zk library", function() {
                                      return zkLib.rmr(testRoot).then(function () {
                                          client.exists(testRoot, function (err, stat) {
                                              if(err) {return done(err);}
-                                             console.log("Did we find the stat", stat);
                                              should(stat).be.null(); // stat ok means that node exists, after rmr it should be gone
                                              return done();
                                          });
@@ -121,7 +120,6 @@ describe("zk library", function() {
             client.mkdirp(testRoot + "/foo", new Buffer("test"),
                           zookeeper.CreateMode.PERSISTENT,
                           function (err, path) {
-                              console.log("now watching test root");
                               zkLib.watchAllChildren(testRoot,
                                                      {recursive: false, times: 1, added:false, deleted:false},
                                                      function  watcher(event) {
@@ -130,7 +128,6 @@ describe("zk library", function() {
                                                              return true;
                                                          }
                                                      }).then(function (services) {
-                                                         console.log("%%%%%%%%", services);
                                                          services.children.length.should.equal(1);
                                                          services.children[0].children.length.should.equal(0);
                                                          services.children[0].data.toString('utf-8').should.equal('test');
@@ -147,7 +144,6 @@ describe("zk library", function() {
                 zkLib.watchAllChildren(testRoot,
                                        {recursive: false, times: 1, added:false, deleted:false},
                                        function watcher(event) {
-                                           console.log("********got event", event);
                                            if(event.name !== 'NODE_DELETED') {
                                                watchCount++;
                                            }
@@ -158,7 +154,6 @@ describe("zk library", function() {
                                            return client.createAsync(testRoot+"/foo", zookeeper.CreateMode.PERSISTENT);
                                        }).delay(100).then(function () {
                                            watchCount.should.equal(1);
-                                           console.log("---------------------", services);
                                            services.children.length.should.equal(1);
                                            should(services.children[0].data).be.equal(null);
                                            done();
@@ -172,7 +167,6 @@ describe("zk library", function() {
                 zkLib.watchAllChildren(testRoot,
                                        {recursive: false, times: 1, added:false, deleted:false},
                                        function watcher(event, data) {
-                                           console.log("got event", event);
                                            if(data) {
                                                console.log(data.toString());
                                            }
@@ -186,14 +180,11 @@ describe("zk library", function() {
                                        }).then(function () {
                                            return client.createAsync(testRoot+"/foo", zookeeper.CreateMode.PERSISTENT)
                                                .delay(100).then(function () {
-                                                   console.log("created bar");
                                                    return client.createAsync(testRoot+"/bar", new Buffer("bar"), zookeeper.CreateMode.PERSISTENT);
                                                });
                                        }).delay(100).then(function () {
-                                           console.log("%%%", services);
                                            watchCount.should.equal(2);
                                            should(services.children.length).be.equal(2);
-                                           console.log("done");
                                            done();
                                        }).catch(function  (err) {
                                            console.log("got error", err);
@@ -209,10 +200,6 @@ describe("zk library", function() {
                 zkLib.watchAllChildren(testRoot,
                                        {recursive: false, times: 1, added:false, deleted:false},
                                        function watcher(event, data) {
-                                           console.log("got event", event);
-                                           if(data) {
-                                               console.log(data.toString());
-                                           }
                                            if(event.name !== 'NODE_CHILDREN_CHANGED') {
                                                childrenChange = true;
                                            }
@@ -227,15 +214,12 @@ describe("zk library", function() {
                                            return client.createAsync(testRoot+"/foo", zookeeper.CreateMode.PERSISTENT)
                                                .delay(100)
                                                .then(function () {
-                                                   console.log("removed foo");
                                                    return client.removeAsync(testRoot+"/foo", zookeeper.CreateMode.PERSISTENT);
                                                });
                                        }).delay(100).then(function () {
-                                           console.log("++++++",services);
                                            childrenChange.should.equal(true);
                                            deleteWatchNotification.should.be.ok();
                                            services.children.length.should.equal(0);
-                                           console.log("done");
                                            done();
                                        }).catch(function  (err) {
                                            console.log("got error", err);
@@ -251,24 +235,17 @@ describe("zk library", function() {
                 zkLib.watchAllChildren(testRoot,
                                        {recursive: false, times: 1, added:false, deleted:false},
                                        function watcher(event, data) {
-                                           console.log("got event", event);
-                                           if(data) {
-                                               console.log(data.toString());
-                                           }
                                            watchCount++;
                                        }).then(function  (s) {
                                            services = s;
 
                                        }).delay(500).then(function () {
-                                           console.log("Creating the /foo/bar node");
                                            return client.mkdirpAsync(testRoot+"/foo/bar", zookeeper.CreateMode.PERSISTENT)
                                                .delay(200)
                                                .then(function () {
-                                                   console.log("~~~~~~", services);
-                                                   console.log("removing foo");
-                                                   return client.removeAsync(testRoot+"/foo/bar", zookeeper.CreateMode.PERSISTENT);                                               });
+                                                   return client.removeAsync(testRoot+"/foo/bar", zookeeper.CreateMode.PERSISTENT);
+                                               });
                                        }).delay(500).then(function () {
-                                           console.log("~~~~~~", services);
                                            console.log("Checking watch count", watchCount);
                                            done();
                                        }).catch(function  (err) {
@@ -278,40 +255,79 @@ describe("zk library", function() {
             });
         });
 
+
+        it("watches for changes on newly added nodes", function(done) {
+            var watchCount = 0;
+            client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
+                zkLib.watchAllChildren(testRoot,
+                                       {recursive: false, times: 1, added:false, deleted:false},
+                                       function watcher(event, data) {
+
+                                           watchCount++;
+                                       }).then(function (s) {
+                                           services = s;
+
+                                       }).delay(500).then(function () {
+                                           return client.mkdirpAsync(testRoot+"/foo/bar/baz", zookeeper.CreateMode.PERSISTENT).then (function () {
+                                               return client.createAsync(testRoot+"/foo/bar/baz/k", new Buffer("bar-baz-k"), zookeeper.CreateMode.PERSISTENT)
+                                           }).then(function () {
+                                               return client.mkdirpAsync(testRoot+"/foo/bing/bong", zookeeper.CreateMode.PERSISTENT).then (function () {
+                                                   return client.createAsync(testRoot+"/foo/bing/bong/k", new Buffer("bing-bong-k"), zookeeper.CreateMode.PERSISTENT)
+                                               })
+                                           }).delay(1000).then(function () {
+                                               var foo = services.children[0];
+                                               var bing = _.find(services.children[0].children, function  (c) {
+                                                   return zkPath.childNode(c.path) === 'bing';
+                                               });
+                                               var bar = _.find(services.children[0].children, function  (c) {
+                                                   return zkPath.childNode(c.path) === 'bar';
+                                               });
+
+                                               should(foo.children.length).be.equal(2);
+
+                                               should(bing).be.ok();
+                                               should(bar).be.ok();
+                                               should(bar.children[0].children[0].data).be.equal('bar-baz-k');
+                                               should(bing.children[0].children[0].data).be.equal('bing-bong-k')
+                                               return client.setDataAsync(testRoot+"/foo/bing/bong/k", new Buffer('updated-bing-bong-k')).delay(100).then(function () {
+
+                                                   should(bing.children[0].children[0].data).be.equal('updated-bing-bong-k');
+                                               });
+
+                                           }).then(function() {
+                                               return done();
+                                           }).catch(function  (err) {
+                                               console.log("got error", err);
+                                               throw err;
+                                           });
+                                       });
+            });
+        });
         it("watches data changes on node", function(done) {
             var watchCount = 0;
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
                                        {recursive: false, times: 1, added:false, deleted:false},
                                        function watcher(event, data) {
-                                           console.log("got event", event);
-                                           if(data) {
-                                               console.log(data.toString());
-                                           }
                                            watchCount++;
                                        }).then(function  (s) {
                                            services = s;
                                        }).delay(500).then(function () {
-                                           console.log("Creating the /foo/bar node");
                                            return client.mkdirpAsync(testRoot+"/foo/bar", zookeeper.CreateMode.PERSISTENT)
                                                .delay(200)
                                                .then(function () {
                                                    return client.setDataAsync(testRoot+"/foo/bar", new Buffer('Yo'));
                                                });
                                        }).delay(500).then(function () {
-                                           //console.log("~~~~~~", services);
                                            should(services.children[0].children[0].path).be.equal("/test-temp/foo/bar");
                                            should(services.children[0].children[0].data).be.equal("Yo");
-                                           console.log("Checking watch count", watchCount);
                                        }).then(function () {
                                            return client.setDataAsync(testRoot+"/foo/bar", new Buffer('Yo Data'));
                                        }).delay(100).then(function () {
-                                           console.log("--------------------", services.children[0]);
                                            should(services.children[0].children[0].data).be.equal("Yo Data");
                                        }).then(function () {
                                            return client.setDataAsync(testRoot+"/foo/bar", new Buffer(''));
                                        }).delay(100).then(function () {
-                                           console.log("--------------------", services.children[0]);
                                            should(services.children[0].children[0].data).not.be.ok();
                                            done();
                                        }).catch(function  (err) {
