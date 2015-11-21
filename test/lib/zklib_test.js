@@ -30,7 +30,7 @@ describe("zk library", function() {
     });
 
     describe("rmr", function() {
-        it("removes single node", function(done) {
+        xit("removes single node", function(done) {
             return client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.EPHEMERAL,
                                  function (err, path) {
                                      if(err) {return done(err);}
@@ -40,7 +40,7 @@ describe("zk library", function() {
                                  });
 
         });
-        it("removes one level deep root", function(done) {
+        xit("removes one level deep root", function(done) {
             return client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT,
                                  function (err, path) {
                                      if(err) {return done(err);}
@@ -61,7 +61,7 @@ describe("zk library", function() {
 
         });
 
-        it("removes multilevel node", function(done) {
+        xit("removes multilevel node", function(done) {
 
             return client.mkdirp(testRoot +'/is/a/very/long/chain/so/child/is/very/far',
                                  new Buffer("test"), zookeeper.CreateMode.PERSISTENT,
@@ -80,7 +80,7 @@ describe("zk library", function() {
         });
 
 
-        it("removes non existant node", function(done) {
+        xit("removes non existant node", function(done) {
             return client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.EPHEMERAL,
                                  function (err, path) {
                                      if(err) {return done(err);}
@@ -95,7 +95,7 @@ describe("zk library", function() {
 
     describe("watchChildren", function () {
         var services;
-        it("watches no children of empty node", function(done) {
+        xit("watches no children of empty node", function(done) {
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
                                        {recursive: false, times: 1, added:false, deleted:false},
@@ -114,7 +114,7 @@ describe("zk library", function() {
             });
         });
 
-        it("watches children non existant node", function(done) {
+        xit("watches children non existant node", function(done) {
 
             return zkLib.watchAllChildren(testRoot,
                                    {recursive: false, times: 1, added:false, deleted:false},
@@ -133,7 +133,7 @@ describe("zk library", function() {
         });
 
 
-        it("watches an existing heirarchy", function(done) {
+        xit("watches an existing heirarchy", function(done) {
             client.mkdirp(testRoot + "/foo", new Buffer("test"),
                           zookeeper.CreateMode.PERSISTENT,
                           function (err, path) {
@@ -155,7 +155,7 @@ describe("zk library", function() {
                           });
                 });
 
-        it("watches one node addition", function(done) {
+        xit("watches one node addition", function(done) {
             var watchCount = 0
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
@@ -178,7 +178,7 @@ describe("zk library", function() {
             });
         });
 
-        it("watches multiple node additions", function(done) {
+        xit("watches multiple node additions", function(done) {
             var watchCount = 0;
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
@@ -211,7 +211,7 @@ describe("zk library", function() {
         });
 
 
-        it("watches multiple node deletions", function(done) {
+        xit("watches multiple node deletions", function(done) {
             var childrenChange = false, deleteWatchNotification = false;
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
@@ -246,7 +246,7 @@ describe("zk library", function() {
         });
 
 
-        it("watches multiple level nodes", function(done) {
+        xit("watches multiple level nodes", function(done) {
             var watchCount = 0;
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
@@ -273,7 +273,7 @@ describe("zk library", function() {
         });
 
 
-        it("watches for changes on newly added nodes", function(done) {
+        xit("watches for changes on newly added nodes", function(done) {
             var watchCount = 0;
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
@@ -320,7 +320,60 @@ describe("zk library", function() {
                                        });
             });
         });
-        it("watches data changes on node", function(done) {
+        it("applies optimal locks", function(done) {
+            // the idea being even though zk will track it as one watcher, we don't want to watch the same node with different callbacks as it may create a larger footprint on client than needed.
+
+            var childrenWatchCounts = {}, deleteCounts = {};
+            childrenWatchCounts[testRoot+"/foo"] = 0;
+            childrenWatchCounts[testRoot]=0;
+            deleteCounts[testRoot+'/foo/eaz'] = 0;
+            deleteCounts[testRoot+'/foo/bar'] = 0;
+            client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
+                zkLib.watchAllChildren(testRoot,
+                                       {recursive: false, times: 1, added:false, deleted:false},
+                                       function watcher(event) {
+                                           if(event.name === 'NODE_CHILDREN_CHANGED') {
+                                               childrenWatchCounts[event.path]++;
+                                           }
+                                           if(event.name === 'NODE_DELETED') {
+                                               deleteCounts[event.path]++;
+                                           }
+
+                                       }).then(function (s) {
+                                           services = s;
+                                       }).delay(1000).then(function () {
+
+                                           var x = [testRoot + '/foo', testRoot+"/foo/bar", testRoot+"/foo/baz", testRoot+'/foo/bazz', testRoot+'/foo/buzz', testRoot+'/foo/caz', testRoot+'/foo/daz', testRoot+'/foo/eaz'];
+                                           return Promise.mapSeries(x, function (path) {
+                                               console.log("Creating path", path);
+                                               return client.createAsync(path, zookeeper.CreateMode.PERSISTENT).delay(500);
+                                           }).then(function () {
+                                               console.log("now deletiong eaz");
+                                               return client.removeAsync(testRoot+'/foo/eaz');
+                                           }).delay(1500).then(function() {
+                                               console.log("The watch cound ===", childrenWatchCounts, deleteCounts);
+                                               childrenWatchCounts[testRoot+"/foo"].should.be.equal(8); // We should see of 1)bar, 2) baz, 3) bazz, 4) buzz, 5) caz, 6) daz, 7, eaz 8 remove eaz
+                                               childrenWatchCounts[testRoot].should.be.equal(1); // We shouls see the 1) foo on the root.
+                                               deleteCounts[testRoot+"/foo/eaz"].should.be.equal(2); // 2 because of the self watch and the children watch.
+                                               deleteCounts[testRoot+"/foo/bar"].should.be.equal(0); // 0 because it's not been deleted yet.
+                                           }).then(function () {
+                                               console.log("now deletiong eaz");
+                                               return client.removeAsync(testRoot+'/foo/bar');
+
+                                           }).delay(1000).then(function () {
+                                               deleteCounts[testRoot+"/foo/bar"].should.be.equal(2); // 2 because of the self watch and the children watch.
+                                           })
+                                               .then(function () {
+                                               done();
+                                           }).catch(function  (err) {
+                                               console.log("got error", err);
+                                               throw err;
+                                           });
+                                       });
+            });
+        });
+
+        xit("watches data changes on node", function(done) {
             var watchCount = 0;
             client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                 zkLib.watchAllChildren(testRoot,
