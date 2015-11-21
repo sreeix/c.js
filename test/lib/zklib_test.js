@@ -106,13 +106,30 @@ describe("zk library", function() {
                                            }
                                            return done("were not expecting a watch invocation");
                                        }).then(function (services) {
-
                                            services.children.length.should.equal(0);
                                            services.data.toString('utf-8').should.equal('test');
                                        }).delay(100).then(function (value) {
                                            done();
                                        }).catch(done);
             });
+        });
+
+        it("watches children non existant node", function(done) {
+
+            return zkLib.watchAllChildren(testRoot,
+                                   {recursive: false, times: 1, added:false, deleted:false},
+                                   function  watcher(event) {
+                                   }).delay(10).then(function (s) {
+                                       services = s ;
+                                       services.children.length.should.equal(0);
+                                       should(services.data).be.not.ok();
+                                   }).then(function  () {
+                                       return client.mkdirpAsync(testRoot, new Buffer('test'), zookeeper.CreateMode.PERSISTENT);
+                                   }).delay(100).then(function () {
+                                       should(services.data).be.equal('test');
+                                   }).then(function () {
+                                       done();
+                                   }).catch(done);
         });
 
 

@@ -57,6 +57,11 @@ getAndWatchNodeChildren(testRoot);
 
 client.setData(testRoot, new Buffer('Tests1'), logme);
 
+client.exists(testRoot, function  (event) {
+    console.log("Exists watcher", event);
+}, logme);
+
+
 //Watchers for data apply only once
 
 // A node data changes can be watched forever by recursive calls to get data.
@@ -74,6 +79,20 @@ client.setData(testRoot, new Buffer('Tests1'), logme);
 
 
 //Read up on the exist watcher(looks like it will do a created/deleted events)
+
+// For children watcher following events are sent
+//     * NODE_CHILDREN_CHANGED & NODE_DELETED
+
+// FOr Data Watchers
+//     * NODE_DATA_CHANGED
+//     * NODE_DELETED
+
+// For exists Watchers
+// *Node_CREATED
+// *NODE_DELETED
+// * NODE_DATA_CHANGED
+
+
 
 client.remove(testRoot,logme);
 
