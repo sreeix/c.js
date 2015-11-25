@@ -12,7 +12,10 @@ describe("persistentEphemeralNode", function() {
         client.once('connected', function () {
             console.log("Connected to zookeeper");
             zkLib = require('../../lib/zkLib')(client);
-            done();
+            return zkLib.ensurePath('/bjn/tmp').then(function () {
+                return done();
+            });
+
         });
     });
     afterEach(function (done) {
@@ -41,7 +44,7 @@ describe("persistentEphemeralNode", function() {
         });
 
     });
-    it("creates a new node without any data", function(done) {
+    xit("creates a new node without any data", function(done) {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1', function (err, path) {
             if(err) {
@@ -58,7 +61,7 @@ describe("persistentEphemeralNode", function() {
     });
 
 
-    it("creates a new ephemeral sequntial node without any data", function(done) {
+    xit("creates a new ephemeral sequntial node without any data", function(done) {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1',
                            null,
@@ -78,7 +81,7 @@ describe("persistentEphemeralNode", function() {
                            });
     });
 
-    it("creates a new ephemeral sequntial node without any data", function(done) {
+    xit("creates a new ephemeral sequntial node without any data", function(done) {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1',
                            'foobarbaz',
@@ -98,7 +101,7 @@ describe("persistentEphemeralNode", function() {
                            });
     });
 
-    it("creates itself after it is explicitly removed", function(done) {
+    xit("creates itself after it is explicitly removed", function(done) {
         var path;
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1').then(function (p) {
@@ -109,7 +112,7 @@ describe("persistentEphemeralNode", function() {
         }).delay(1000).then(function () {
             return client.existsAsync('/bjn/tmp/persistent1').get(0).then(function (stat) {
                 console.log("-----",stat);
-                should(stat).be.ok()
+                should(stat).be.ok();
             });
         }).then(function () {
             path.close();
@@ -117,5 +120,4 @@ describe("persistentEphemeralNode", function() {
 
         }).catch(done);
     });
-
 });
