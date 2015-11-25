@@ -12,7 +12,10 @@ describe("persistentEphemeralNode", function() {
         client.once('connected', function () {
             console.log("Connected to zookeeper");
             zkLib = require('../../lib/zkLib')(client);
-            done();
+            return zkLib.ensurePath('/bjn/tmp').then(function () {
+                return done();
+            });
+
         });
     });
     afterEach(function (done) {
@@ -39,7 +42,7 @@ describe("persistentEphemeralNode", function() {
             }).catch(done);
 
     });
-    it("creates a new node without any data", function(done) {
+    xit("creates a new node without any data", function(done) {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1')
             .then(function (path) {
@@ -54,7 +57,7 @@ describe("persistentEphemeralNode", function() {
     });
 
 
-    it("creates a new ephemeral sequntial node without any data", function(done) {
+    xit("creates a new ephemeral sequntial node without any data", function(done) {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1',
                            null,
@@ -69,6 +72,7 @@ describe("persistentEphemeralNode", function() {
                               });
                           }).catch(done);
     });
+
 
     it("creates a new ephemeral sequntial node with data", function(done) {
         console.log("creating new node");
@@ -103,7 +107,7 @@ describe("persistentEphemeralNode", function() {
                           }).catch(done);
     });
 
-    it("creates itself after it is explicitly removed", function(done) {
+    xit("creates itself after it is explicitly removed", function(done) {
         var path;
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1').then(function (p) {
@@ -113,6 +117,7 @@ describe("persistentEphemeralNode", function() {
 
         }).then(function () {
             return client.removeAsync('/bjn/tmp/persistent1');
+
         }).delay(100).then(function () {
             return client.getDataAsync('/bjn/tmp/persistent1')
                 .spread(function (data, stat) {
