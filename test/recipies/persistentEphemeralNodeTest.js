@@ -28,33 +28,29 @@ describe("persistentEphemeralNode", function() {
 
     it("creates a new node", function(done) {
         console.log("creating new node");
-        pen(client).create('/bjn/tmp/persistent1','hello',  function (err, path) {
-            if(err) {
-                throw err;
-            }
-            path.path.should.equal('/bjn/tmp/persistent1');
-            return client.getDataAsync('/bjn/tmp/persistent1').spread(function  (data, stat) {
-                should(data.toString('utf-8')).be.equal('hello');
-                path.close();
-                done();
+        pen(client).create('/bjn/tmp/persistent1','hello')
+            .then(function ( path) {
+                path.path.should.equal('/bjn/tmp/persistent1');
+                return client.getDataAsync('/bjn/tmp/persistent1').spread(function  (data, stat) {
+                    should(data.toString('utf-8')).be.equal('hello');
+                    path.close();
+                    done();
+                });
             }).catch(done);
-        });
 
     });
     it("creates a new node without any data", function(done) {
         console.log("creating new node");
-        pen(client).create('/bjn/tmp/persistent1', function (err, path) {
-            if(err) {
-                throw err;
-            }
-            return client.getDataAsync('/bjn/tmp/persistent1').spread(function (data, stat) {
-                console.log("Got Path", path);
-                should(data).be.not.be.ok();
-                path.path.should.equal('/bjn/tmp/persistent1');
-                path.close();
-                done();
+        pen(client).create('/bjn/tmp/persistent1')
+            .then(function (path) {
+                return client.getDataAsync('/bjn/tmp/persistent1').spread(function (data, stat) {
+                    console.log("Got Path", path);
+                    should(data).be.not.be.ok();
+                    path.path.should.equal('/bjn/tmp/persistent1');
+                    path.close();
+                    done();
+                });
             }).catch(done);
-        });
     });
 
 
@@ -62,40 +58,49 @@ describe("persistentEphemeralNode", function() {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1',
                            null,
-                           zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL ,
-                           function (err, path) {
-                               if(err) {
-                                   throw err;
-                               }
-                               console.log("Got Path", path);
-                               return client.getDataAsync(path.path).spread(function (data, stat) {
-                                   should(data).be.not.be.ok();
-                                   path.path.should.not.equal('/bjn/tmp/persistent1');
-                                   path.close();
-                                   console.log("-----------");
-                                   done();
-                               }).catch(done);
-                           });
+                           zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL
+                          ).then(function (path) {
+                              console.log("Got Path", path);
+                              return client.getDataAsync(path.path).spread(function (data, stat) {
+                                  should(data).be.not.be.ok();
+                                  path.path.should.not.equal('/bjn/tmp/persistent1');
+                                  path.close();
+                                  done();
+                              });
+                          }).catch(done);
     });
 
-    it("creates a new ephemeral sequntial node without any data", function(done) {
+    it("creates a new ephemeral sequntial node with data", function(done) {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1',
                            'foobarbaz',
-                           zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL ,
-                           function (err, path) {
-                               if(err) {
-                                   throw err;
-                               }
-                               console.log("Got Path", path);
-                               return client.getDataAsync(path.path).spread(function (data, stat) {
-                                   should(data.toString('utf-8')).be.equal('foobarbaz');
-                                   path.path.should.not.equal('/bjn/tmp/persistent1');
-                                   path.close();
-                                   console.log("-----------");
-                                   done();
-                               }).catch(done);
-                           });
+                           zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL
+                          ).then(function (path) {
+                              console.log("Got Path", path);
+                              return client.getDataAsync(path.path).spread(function (data, stat) {
+                                  should(data.toString('utf-8')).be.equal('foobarbaz');
+                                  path.path.should.not.equal('/bjn/tmp/persistent1');
+                                  path.close();
+                                  console.log("-----------");
+                                  done();
+                              })
+                          }).catch(done);
+    });
+
+    it("creates a new ephemeral sequntial node without any data is recreated", function(done) {
+        console.log("creating new node");
+        pen(client).create('/bjn/tmp/persistent1',
+                           'foobarbaz',
+                           zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL
+                          ).then(function (path) {
+                              console.log("Got Path", path);
+                              return client.getDataAsync(path.path).spread(function (data, stat) {
+                                  should(data.toString('utf-8')).be.equal('foobarbaz');
+                                  path.path.should.not.equal('/bjn/tmp/persistent1');
+                                  path.close();
+                                  done();
+                              })
+                          }).catch(done);
     });
 
     it("creates itself after it is explicitly removed", function(done) {
@@ -105,17 +110,149 @@ describe("persistentEphemeralNode", function() {
             path = p;
             console.log("Got Path", path);
             path.path.should.equal('/bjn/tmp/persistent1');
+
+        }).then(function () {
             return client.removeAsync('/bjn/tmp/persistent1');
-        }).delay(1000).then(function () {
-            return client.existsAsync('/bjn/tmp/persistent1').get(0).then(function (stat) {
-                console.log("-----",stat);
-                should(stat).be.ok()
-            });
+        }).delay(100).then(function () {
+            return client.getDataAsync('/bjn/tmp/persistent1')
+                .spread(function (data, stat) {
+                    should(stat).be.ok();
+                    should(data).be.undefined();
+                });
         }).then(function () {
             path.close();
             done();
-
         }).catch(done);
     });
+
+    it("creates itself with data after it is explicitly removed", function(done) {
+        var path;
+        console.log("creating new node");
+        pen(client).create('/bjn/tmp/persistent1', 'Hello world').then(function (p) {
+            path = p;
+            console.log("Got Path", path);
+            path.path.should.equal('/bjn/tmp/persistent1');
+
+        }).then(function () {
+            return client.removeAsync('/bjn/tmp/persistent1');
+        }).delay(100).then(function () {
+            return client.getDataAsync('/bjn/tmp/persistent1')
+                .spread(function (data, stat) {
+                    should(stat).be.ok();
+                    should(data.toString('utf-8')).be.equal('Hello world');
+                });
+        }).then(function () {
+            path.close();
+            done();
+        }).catch(done);
+    });
+
+        it("creates itself with data after it is explicitly removed", function(done) {
+        var path;
+        console.log("creating new node");
+        pen(client).create('/bjn/tmp/persistent1', 'Hello world').then(function (p) {
+            path = p;
+            console.log("Got Path", path);
+            path.path.should.equal('/bjn/tmp/persistent1');
+
+        }).then(function () {
+            return client.removeAsync('/bjn/tmp/persistent1');
+        }).delay(100).then(function () {
+            return client.getDataAsync('/bjn/tmp/persistent1')
+                .spread(function (data, stat) {
+                    should(stat).be.ok();
+                    should(data.toString('utf-8')).be.equal('Hello world');
+                });
+        }).then(function () {
+            path.close();
+            done();
+        }).catch(done);
+    });
+
+    it("creates sequential ephemeral at same path after it is explicitly removed multiple times", function(done) {
+        var path;
+        console.log("creating new node");
+        pen(client).create('/bjn/tmp/persistent1', null, zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL)
+            .then(function (p) {
+                path = p;
+                console.log("Got Path", path);
+                path.path.should.not.equal('/bjn/tmp/persistent1');
+                path.path.should.startWith('/bjn/tmp/persistent1');
+            }).then(function () {
+                return client.removeAsync(path.path);
+            }).delay(100).then(function () {
+                return client.getDataAsync(path.path)
+                    .spread(function (data, stat) {
+                        should(stat).be.ok();
+                        should(data).be.undefined();
+                    });
+            }).then(function () {
+                return client.removeAsync(path.path);
+            }).delay(100).then(function () {
+                return client.getDataAsync(path.path)
+                    .spread(function (data, stat) {
+                        should(stat).be.ok();
+                        should(data).be.undefined();
+                    });
+            }).then(function () {
+                path.close();
+                done();
+            }).catch(done);
+    });
+
+        it("creates sequential ephemeral on the same path after it is explicitly removed", function(done) {
+        var path;
+        console.log("creating new node");
+        pen(client).create('/bjn/tmp/persistent1', 'persistentephemeralnode', zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL)
+            .then(function (p) {
+                path = p;
+                console.log("Got Path", path);
+                path.path.should.not.equal('/bjn/tmp/persistent1');
+                path.path.should.startWith('/bjn/tmp/persistent1');
+            }).then(function () {
+                return client.removeAsync(path.path);
+            }).delay(100).then(function () {
+                return client.getDataAsync(path.path)
+                    .spread(function (data, stat) {
+                        should(stat).be.ok();
+                        should(data.toString('utf-8')).be.equal('persistentephemeralnode');
+                    });
+            }).then(function () {
+                path.close();
+                done();
+            }).catch(done);
+    });
+
+            it("creates sequential ephemeral on the same path after it is explicitly removed multiple times ", function(done) {
+        var path;
+        console.log("creating new node");
+        pen(client).create('/bjn/tmp/persistent1', 'persistentephemeralnode', zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL)
+            .then(function (p) {
+                path = p;
+                console.log("Got Path", path);
+                path.path.should.not.equal('/bjn/tmp/persistent1');
+                path.path.should.startWith('/bjn/tmp/persistent1');
+            }).then(function () {
+                return client.removeAsync(path.path);
+            }).delay(100).then(function () {
+                return client.getDataAsync(path.path)
+                    .spread(function (data, stat) {
+                        should(stat).be.ok();
+                        should(data.toString('utf-8')).be.equal('persistentephemeralnode');
+                    });
+            }).then(function () {
+                return client.removeAsync(path.path);
+            }).delay(100).then(function () {
+                return client.getDataAsync(path.path)
+                    .spread(function (data, stat) {
+                        should(stat).be.ok();
+                        should(data.toString('utf-8')).be.equal('persistentephemeralnode');
+                    });
+            }).then(function () {
+                path.close();
+                done();
+            }).catch(done);
+    });
+
 
 });
