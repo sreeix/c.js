@@ -152,7 +152,7 @@ describe("persistentEphemeralNode", function() {
         }).catch(done);
     });
 
-        it("creates itself with data after it is explicitly removed", function(done) {
+    it("creates itself with data after it is explicitly removed", function(done) {
         var path;
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1', 'Hello world').then(function (p) {
@@ -173,6 +173,8 @@ describe("persistentEphemeralNode", function() {
             done();
         }).catch(done);
     });
+
+
 
     it("creates sequential ephemeral at same path after it is explicitly removed multiple times", function(done) {
         var path;
