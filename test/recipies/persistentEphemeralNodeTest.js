@@ -34,7 +34,7 @@ describe("persistentEphemeralNode", function() {
         pen(client).create('/bjn/tmp/persistent1','hello')
             .then(function ( path) {
                 path.path.should.equal('/bjn/tmp/persistent1');
-                return client.getDataAsync('/bjn/tmp/persistent1').spread(function  (data, stat) {
+                return client.getDataAsync('/bjn/tmp/persistent1').then(function  (data) {
                     should(data.toString('utf-8')).be.equal('hello');
                     path.close();
                     done();
@@ -42,11 +42,11 @@ describe("persistentEphemeralNode", function() {
             }).catch(done);
 
     });
-    xit("creates a new node without any data", function(done) {
+    it("creates a new node without any data", function(done) {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1')
             .then(function (path) {
-                return client.getDataAsync('/bjn/tmp/persistent1').spread(function (data, stat) {
+                return client.getDataAsync('/bjn/tmp/persistent1').then(function (data) {
                     console.log("Got Path", path);
                     should(data).be.not.be.ok();
                     path.path.should.equal('/bjn/tmp/persistent1');
@@ -57,14 +57,14 @@ describe("persistentEphemeralNode", function() {
     });
 
 
-    xit("creates a new ephemeral sequntial node without any data", function(done) {
+    it("creates a new ephemeral sequntial node without any data", function(done) {
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1',
                            null,
                            zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL
                           ).then(function (path) {
                               console.log("Got Path", path);
-                              return client.getDataAsync(path.path).spread(function (data, stat) {
+                              return client.getDataAsync(path.path).then(function (data) {
                                   should(data).be.not.be.ok();
                                   path.path.should.not.equal('/bjn/tmp/persistent1');
                                   path.close();
@@ -81,11 +81,10 @@ describe("persistentEphemeralNode", function() {
                            zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL
                           ).then(function (path) {
                               console.log("Got Path", path);
-                              return client.getDataAsync(path.path).spread(function (data, stat) {
+                              return client.getDataAsync(path.path).then(function (data) {
                                   should(data.toString('utf-8')).be.equal('foobarbaz');
                                   path.path.should.not.equal('/bjn/tmp/persistent1');
                                   path.close();
-                                  console.log("-----------");
                                   done();
                               })
                           }).catch(done);
@@ -98,7 +97,7 @@ describe("persistentEphemeralNode", function() {
                            zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL
                           ).then(function (path) {
                               console.log("Got Path", path);
-                              return client.getDataAsync(path.path).spread(function (data, stat) {
+                              return client.getDataAsync(path.path).then(function (data) {
                                   should(data.toString('utf-8')).be.equal('foobarbaz');
                                   path.path.should.not.equal('/bjn/tmp/persistent1');
                                   path.close();
@@ -107,7 +106,7 @@ describe("persistentEphemeralNode", function() {
                           }).catch(done);
     });
 
-    xit("creates itself after it is explicitly removed", function(done) {
+    it("creates itself after it is explicitly removed", function(done) {
         var path;
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1').then(function (p) {
@@ -116,12 +115,12 @@ describe("persistentEphemeralNode", function() {
             path.path.should.equal('/bjn/tmp/persistent1');
 
         }).then(function () {
+            console.log("removing the node");
             return client.removeAsync('/bjn/tmp/persistent1');
 
         }).delay(100).then(function () {
             return client.getDataAsync('/bjn/tmp/persistent1')
-                .spread(function (data, stat) {
-                    should(stat).be.ok();
+                .then(function (data,stat) {
                     should(data).be.undefined();
                 });
         }).then(function () {
@@ -142,8 +141,7 @@ describe("persistentEphemeralNode", function() {
             return client.removeAsync('/bjn/tmp/persistent1');
         }).delay(100).then(function () {
             return client.getDataAsync('/bjn/tmp/persistent1')
-                .spread(function (data, stat) {
-                    should(stat).be.ok();
+                .then(function (data) {
                     should(data.toString('utf-8')).be.equal('Hello world');
                 });
         }).then(function () {
@@ -164,8 +162,7 @@ describe("persistentEphemeralNode", function() {
             return client.removeAsync('/bjn/tmp/persistent1');
         }).delay(100).then(function () {
             return client.getDataAsync('/bjn/tmp/persistent1')
-                .spread(function (data, stat) {
-                    should(stat).be.ok();
+                .then(function (data) {
                     should(data.toString('utf-8')).be.equal('Hello world');
                 });
         }).then(function () {
@@ -189,16 +186,14 @@ describe("persistentEphemeralNode", function() {
                 return client.removeAsync(path.path);
             }).delay(100).then(function () {
                 return client.getDataAsync(path.path)
-                    .spread(function (data, stat) {
-                        should(stat).be.ok();
+                    .then(function (data) {
                         should(data).be.undefined();
                     });
             }).then(function () {
                 return client.removeAsync(path.path);
             }).delay(100).then(function () {
                 return client.getDataAsync(path.path)
-                    .spread(function (data, stat) {
-                        should(stat).be.ok();
+                    .then(function (data) {
                         should(data).be.undefined();
                     });
             }).then(function () {
@@ -220,8 +215,7 @@ describe("persistentEphemeralNode", function() {
                 return client.removeAsync(path.path);
             }).delay(100).then(function () {
                 return client.getDataAsync(path.path)
-                    .spread(function (data, stat) {
-                        should(stat).be.ok();
+                    .then(function (data) {
                         should(data.toString('utf-8')).be.equal('persistentephemeralnode');
                     });
             }).then(function () {
@@ -243,16 +237,14 @@ describe("persistentEphemeralNode", function() {
                 return client.removeAsync(path.path);
             }).delay(100).then(function () {
                 return client.getDataAsync(path.path)
-                    .spread(function (data, stat) {
-                        should(stat).be.ok();
+                    .then(function (data) {
                         should(data.toString('utf-8')).be.equal('persistentephemeralnode');
                     });
             }).then(function () {
                 return client.removeAsync(path.path);
             }).delay(100).then(function () {
                 return client.getDataAsync(path.path)
-                    .spread(function (data, stat) {
-                        should(stat).be.ok();
+                    .then(function (data) {
                         should(data.toString('utf-8')).be.equal('persistentephemeralnode');
                     });
             }).then(function () {
