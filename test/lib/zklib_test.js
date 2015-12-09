@@ -29,7 +29,7 @@ describe("zk library", function() {
         }).catch(done);
     });
 
-    xdescribe("rmr", function() {
+    describe("rmr", function() {
         it("removes single node", function(done) {
             return client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT,
                                  function (err, path) {
@@ -95,7 +95,7 @@ describe("zk library", function() {
 
     describe("watchChildren", function () {
         var services;
-        xdescribe("with defaults", function() {
+        describe("with defaults", function() {
             it("watches no children of empty node", function(done) {
                 client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
                     zkLib.watchAllChildren(testRoot, function  watcher(event) {
@@ -389,6 +389,154 @@ describe("zk library", function() {
                 });
             });
         });
+        xdescribe("depth watch", function  () {
+            var services;
+            it("nothing if depth is 0", function() {
+                return client.createAsync(testRoot, new Buffer('xxx'), zookeeper.CreateMode.PERSISTENT)
+                    .then(function() {
+                        return zkLib.watchAllChildren(testRoot, {depth: 0}, function (evt) {
+                            console.log(evt);
+                            if(evt.name !== 'NODE_DELETED') {
+                                throw new Error('Unexpected event', evt);
+                            }
+                        });
+                    }).then(function (s) {
+                        services = s;
+                    }).then(function () {
+                        services.children.length.should.equal(0);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'foo'));
+                    }).delay(100).then(function () {
+                        console.log(services);
+                        services.children.length.should.equal(0);
+                    });
+            });
+
+            it("depth is 1", function() {
+                var barNode;
+                return client.createAsync(testRoot, new Buffer('xxx'), zookeeper.CreateMode.PERSISTENT)
+                    .then(function() {
+                        return zkLib.watchAllChildren(testRoot, {depth: 1}, function (evt) {
+                            // console.log(evt);
+                            // if(evt.name !== 'NODE_DELETED') {
+                            //     throw new Error('Unexpected event', evt);
+                            // }
+                        });
+                    }).then(function (s) {
+                        services = s;
+                    }).then(function () {
+                        services.children.length.should.equal(0);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'foo'));
+                    }).delay(100).then(function () {
+                        services.children.length.should.equal(1);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar'));
+                    }).delay(100).then(function () {
+                        services.children.length.should.equal(2);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar','car'));
+                    }).delay(100).then(function () {
+                        barNode = _.find(services.children, function (c) {
+                            console.log(c);
+                            return c.path === zkPath.join(testRoot,'bar');
+                        });
+                        services.children.length.should.equal(2);
+                        barNode.children.length.should.equal(0);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar','car', 'tar'));
+                    }).delay(100).then(function () {
+                        var carNode = _.find(barNode.children, function (c) {
+                            return c.path === zkPath.join(testRoot,'bar','car');
+                        });
+                        should(carNode).be.not.ok();
+                    });
+            });
+
+
+            it("depth is 2", function() {
+                var barNode;
+                return client.createAsync(testRoot, new Buffer('xxx'), zookeeper.CreateMode.PERSISTENT)
+                    .then(function() {
+                        return zkLib.watchAllChildren(testRoot, {depth: 2}, function (evt) {
+                            // console.log(evt);
+                            // if(evt.name !== 'NODE_DELETED') {
+                            //     throw new Error('Unexpected event', evt);
+                            // }
+                        });
+                    }).then(function (s) {
+                        services = s;
+                    }).then(function () {
+                        services.children.length.should.equal(0);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'foo'));
+                    }).delay(100).then(function () {
+                        services.children.length.should.equal(1);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar'));
+                    }).delay(100).then(function () {
+                        services.children.length.should.equal(2);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar','car'));
+                    }).delay(100).then(function () {
+                        barNode = _.find(services.children, function (c) {
+                            return c.path === zkPath.join(testRoot,'bar');
+                        });
+                        services.children.length.should.equal(2);
+                        barNode.children.length.should.equal(1);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar','car', 'tar'));
+                    }).delay(100).then(function () {
+                        var carNode = _.find(barNode.children, function (c) {
+                            return c.path === zkPath.join(testRoot,'bar','car');
+                        });
+                        should(carNode).be.ok();
+                        should(carNode.children.length).be.equal(0);
+                    });
+            });
+
+            it("depth is INFinity", function() {
+                var barNode;
+                return client.createAsync(testRoot, new Buffer('xxx'), zookeeper.CreateMode.PERSISTENT)
+                    .then(function() {
+                        return zkLib.watchAllChildren(testRoot, {depth: Infinity}, function (evt) {
+                            // console.log(evt);
+                            // if(evt.name !== 'NODE_DELETED') {
+                            //     throw new Error('Unexpected event', evt);
+                            // }
+                        });
+                    }).then(function (s) {
+                        services = s;
+                    }).then(function () {
+                        services.children.length.should.equal(0);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'foo'));
+                    }).delay(100).then(function () {
+                        services.children.length.should.equal(1);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar'));
+                    }).delay(100).then(function () {
+                        services.children.length.should.equal(2);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar','car'));
+                    }).delay(100).then(function () {
+                        barNode = _.find(services.children, function (c) {
+                            return c.path === zkPath.join(testRoot,'bar');
+                        });
+                        services.children.length.should.equal(2);
+                        barNode.children.length.should.equal(1);
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'bar','car', 'tar'));
+                    }).delay(100).then(function () {
+                        var carNode = _.find(barNode.children, function (c) {
+                            return c.path === zkPath.join(testRoot,'bar','car');
+                        });
+                        should(carNode).be.ok();
+                        should(carNode.children.length).be.equal(1);
+                    });
+            });
+        });
+
         describe("data watchers", function  () {
             it("does not watch data if disallowed on single node", function(done) {
                 client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
@@ -405,33 +553,43 @@ describe("zk library", function() {
                                                services.data.toString('utf-8').should.equal('test');
                                                return client.setDataAsync(testRoot, new Buffer('updated-test'));
                                            }).delay(400).then(function  () {
-                                               services.data.toString('utf-8').should.equal('test');
+                                               services.data.toString('utf-8').should.equal('test'); // the values have not updated, because thre are no watchers
                                            }).then(function (value) {
                                                done();
                                            }).catch(done);
                 });
             });
             it("does not watch data if disallowed recursively", function(done) {
-                should(1).not.be.equal(1); // fix me.
-                client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.EPHEMERAL, function (err, path) {
-                    zkLib.watchAllChildren(testRoot, {data:false},
-                                           function  watcher(event) {
-                                               // there will be a delete notification of the root.
-                                               if(event.name === 'NODE_DELETED') {
-                                                   return true;
-                                               }
-                                               return done("were not expect().pecting a watch invocation");
-                                           }).delay(100).then(function (s) {
-                                               services = s;
-                                               services.children.length.should.equal(0);
-                                               services.data.toString('utf-8').should.equal('test');
-                                               return client.setDataAsync(testRoot, new Buffer('updated-test'));
-                                           }).delay(400).then(function  () {
-                                               services.data.toString('utf-8').should.equal('test');
-                                           }).then(function (value) {
-                                               done();
-                                           }).catch(done);
-                });
+                client.createAsync(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT)
+                    .then(function (path) {
+                        return zkLib.watchAllChildren(testRoot, {data:false, depth: 2},
+                                               function  watcher(event) {
+                                                   // there will be a delete notification of the root.
+                                                   if(event.name === 'NODE_DELETED' ||
+                                                      event.name=== 'NODE_CHILDREN_CHANGED') {
+                                                       console.log("Event", event);
+                                                       return true;
+                                                   }
+                                                   return done("were not expect().pecting a watch invocation");
+                                               });
+                    }).delay(100).then(function (s) {
+                        services = s;
+                        services.children.length.should.equal(0);
+                        services.data.toString('utf-8').should.equal('test');
+                        return client.setDataAsync(testRoot, new Buffer('updated-test'));
+                    }).then(function () {
+                        return client.createAsync(zkPath.join(testRoot, 'foo'), new Buffer("foo"), zookeeper.CreateMode.EPHEMERAL);
+                    }).delay(100).then(function () {
+                        console.log(services);
+                        services.children.length.should.equal(1);
+                        services.children[0].data.toString('utf-8').should.equal('foo');
+                    }).then(function () {
+                        return client.setDataAsync(zkPath.join(testRoot, 'foo'), new Buffer('foo-new'));
+                    }).delay(400).then(function () {
+                        services.children[0].data.toString('utf-8').should.equal('foo'); // should not update the data.
+                    }).then(function (value) {
+                        done();
+                    }).catch(done);
             });
 
             it("does not watch data if explictly allowed on single node", function(done) {
