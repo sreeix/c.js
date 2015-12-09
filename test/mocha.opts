@@ -3,3 +3,6 @@
 --ui bdd
 --growl
 --timeout 20000
+--check-leaks
+--full-trace
+--inline-diffs
