@@ -389,7 +389,7 @@ describe("zk library", function() {
                 });
             });
         });
-        xdescribe("depth watch", function  () {
+        describe("depth watch", function  () {
             var services;
             it("nothing if depth is 0", function() {
                 return client.createAsync(testRoot, new Buffer('xxx'), zookeeper.CreateMode.PERSISTENT)
