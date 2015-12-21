@@ -224,7 +224,7 @@ describe("persistentEphemeralNode", function() {
             }).catch(done);
     });
 
-            it("creates sequential ephemeral on the same path after it is explicitly removed multiple times ", function(done) {
+    it("creates sequential ephemeral on the same path after it is explicitly removed multiple times ", function(done) {
         var path;
         console.log("creating new node");
         pen(client).create('/bjn/tmp/persistent1', 'persistentephemeralnode', zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL)
@@ -252,6 +252,9 @@ describe("persistentEphemeralNode", function() {
                 done();
             }).catch(done);
     });
-
+    // following need to be tested but not really is.
+    //    * Session timeouts
+    // * short disconnect from Zookeeper
+    // Zookeeper down (for a long time/short time)
 
 });
