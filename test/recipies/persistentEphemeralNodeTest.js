@@ -86,7 +86,7 @@ describe("persistentEphemeralNode", function() {
                                   path.path.should.not.equal('/bjn/tmp/persistent1');
                                   path.close();
                                   done();
-                              })
+                              });
                           }).catch(done);
     });
 
@@ -102,7 +102,7 @@ describe("persistentEphemeralNode", function() {
                                   path.path.should.not.equal('/bjn/tmp/persistent1');
                                   path.close();
                                   done();
-                              })
+                              });
                           }).catch(done);
     });
 

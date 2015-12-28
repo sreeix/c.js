@@ -80,7 +80,7 @@ describe('2 pc', function  () {
             });
         });
 
-    })
+    });
 
     describe("loose 2pc with quorum", function() {
         describe("simple one site tests", function  () {

@@ -150,7 +150,7 @@ describe("zk library", function() {
             });
 
             it("watches one node addition", function(done) {
-                var watchCount = 0
+                var watchCount = 0;
                 client.create(testRoot, new Buffer("test"), zookeeper.CreateMode.PERSISTENT, function (err, path) {
                     zkLib.watchAllChildren(testRoot, function watcher(event) {
                         if(event.name !== 'NODE_DELETED') {
@@ -271,11 +271,11 @@ describe("zk library", function() {
 
                                            }).delay(500).then(function () {
                                                return client.mkdirpAsync(testRoot+"/foo/bar/baz", zookeeper.CreateMode.PERSISTENT).then (function () {
-                                                   return client.createAsync(testRoot+"/foo/bar/baz/k", new Buffer("bar-baz-k"), zookeeper.CreateMode.PERSISTENT)
+                                                   return client.createAsync(testRoot+"/foo/bar/baz/k", new Buffer("bar-baz-k"), zookeeper.CreateMode.PERSISTENT);
                                                }).then(function () {
                                                    return client.mkdirpAsync(testRoot+"/foo/bing/bong", zookeeper.CreateMode.PERSISTENT).then (function () {
-                                                       return client.createAsync(testRoot+"/foo/bing/bong/k", new Buffer("bing-bong-k"), zookeeper.CreateMode.PERSISTENT)
-                                                   })
+                                                       return client.createAsync(testRoot+"/foo/bing/bong/k", new Buffer("bing-bong-k"), zookeeper.CreateMode.PERSISTENT);
+                                                   });
                                                }).delay(1000).then(function () {
                                                    var foo = services.children[0];
                                                    var bing = _.find(services.children[0].children, function  (c) {
@@ -286,11 +286,10 @@ describe("zk library", function() {
                                                    });
 
                                                    should(foo.children.length).be.equal(2);
-
                                                    should(bing).be.ok();
                                                    should(bar).be.ok();
                                                    should(bar.children[0].children[0].data).be.equal('bar-baz-k');
-                                                   should(bing.children[0].children[0].data).be.equal('bing-bong-k')
+                                                   should(bing.children[0].children[0].data).be.equal('bing-bong-k');
                                                    return client.setDataAsync(testRoot+"/foo/bing/bong/k", new Buffer('updated-bing-bong-k')).delay(100).then(function () {
 
                                                        should(bing.children[0].children[0].data).be.equal('updated-bing-bong-k');

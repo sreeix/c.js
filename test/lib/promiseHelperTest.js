@@ -79,7 +79,7 @@ describe(" promiseHelper", function() {
                     callCount++;
                     return Promise.reject(10);
                 }, {type: 'linear', errorFilter: function (err) {
-                    console.log('Returning false from error filter')
+                    console.log('Returning false from error filter');
                     return false;
                 }}).then(function () {
                     return done("Success was not expected");
@@ -90,7 +90,7 @@ describe(" promiseHelper", function() {
                 });
             });
 
-        })
+        });
     });
 
 });
